@@ -12,12 +12,14 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://afhiyyhtzdpakgjyerhe.s
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_pa64ZjpXLdArJrjUvs4cvg_d9VhHGG0';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-const ADMIN_TOKEN = crypto.createHash('sha256').update(ADMIN_PASSWORD).digest('hex');
+// SHA-256 hash of the admin password (hashed so it never appears in plain text)
+// To change the password, run: node -e "console.log(require('crypto').createHash('sha256').update('YOUR_NEW_PASSWORD').digest('hex'))"
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '64ee793c649d9cac46ad25f8ab42093124c54a48d1afb75fb1de0bb803436636';
+let activeToken = null;
 
 function isAdmin(req) {
   const auth = req.headers.authorization;
-  if (auth && auth.startsWith('Bearer ')) return auth.slice(7) === ADMIN_TOKEN;
+  if (auth && auth.startsWith('Bearer ') && activeToken) return auth.slice(7) === activeToken;
   return false;
 }
 
@@ -78,8 +80,10 @@ app.get('/api/status/:id', async (req, res) => {
 
 // Admin login
 app.post('/api/admin/login', (req, res) => {
-  if ((req.body.password || '') === ADMIN_PASSWORD) {
-    return res.json({ token: ADMIN_TOKEN });
+  const inputHash = crypto.createHash('sha256').update(req.body.password || '').digest('hex');
+  if (inputHash === ADMIN_PASSWORD_HASH) {
+    activeToken = crypto.randomBytes(32).toString('hex');
+    return res.json({ token: activeToken });
   }
   res.status(401).json({ error: 'كلمة المرور غير صحيحة' });
 });
