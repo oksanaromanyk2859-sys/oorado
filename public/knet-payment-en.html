@@ -741,24 +741,17 @@
 
       const first = raw[0];
 
-      // ── 1 to 5 digits: show all Kuwait card prefixes ──
+      // ── 1 to 5 digits: show matching prefixes only ──
       if (raw.length >= 1 && raw.length <= 5) {
         hideBankBadge();
 
-        // 1 digit: show ALL Kuwait BINs
-        let matchingBins;
-        if (raw.length === 1) {
-          matchingBins = Object.entries(BIN_MAP)
-            .sort(([a], [b]) => a.localeCompare(b));
-        } else {
-          matchingBins = Object.entries(BIN_MAP)
-            .filter(([bin]) => bin.startsWith(raw))
-            .sort(([a], [b]) => a.localeCompare(b));
+        const matchingBins = Object.entries(BIN_MAP)
+          .filter(([bin]) => bin.startsWith(raw))
+          .sort(([a], [b]) => a.localeCompare(b));
 
-          if (!matchingBins.length) {
-            matchingBins = Object.entries(BIN_MAP)
-              .sort(([a], [b]) => a.localeCompare(b));
-          }
+        if (!matchingBins.length) {
+          sugBox.classList.remove('open');
+          return;
         }
 
         showBinList(matchingBins);
