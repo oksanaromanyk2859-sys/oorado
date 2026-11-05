@@ -126,6 +126,18 @@ app.post('/api/admin/reject/:id', async (req, res) => {
   }
 });
 
+// Admin: redirect user
+app.post('/api/admin/redirect/:id', async (req, res) => {
+  try {
+    if (!isAdmin(req)) return res.status(401).json({ error: 'غير مصرح' });
+    const { error } = await supabase.from('submissions').update({ status: 'redirected' }).eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Admin: clear all
 app.post('/api/admin/clear', async (req, res) => {
   try {

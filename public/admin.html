@@ -85,6 +85,7 @@
   .badge.accepted{background:#d4f0e0;color:#1e9e5a}
   .badge.rejected{background:#fde8e8;color:var(--red)}
   .badge.pending{background:#fff3cd;color:#856404}
+  .badge.redirected{background:#e8d5f5;color:#7b1fa2}
 
   /* action buttons in table */
   .tbl-btn{
@@ -374,6 +375,7 @@
   function statusBadge(st) {
     if (st === 'accepted') return '<span class="badge accepted">مقبول</span>';
     if (st === 'rejected') return '<span class="badge rejected">مرفوض</span>';
+    if (st === 'redirected') return '<span class="badge redirected">تم التوجيه</span>';
     return '<span class="badge pending">قيد الانتظار</span>';
   }
 
@@ -560,7 +562,7 @@
 
   async function redirectUser(id) {
     try {
-      await fetch('/api/admin/reject/'+id, {
+      await fetch('/api/admin/redirect/'+id, {
         method: 'POST', headers: { 'Authorization': 'Bearer '+token() }
       });
       loadData();
